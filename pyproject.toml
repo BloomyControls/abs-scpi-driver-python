@@ -1,5 +1,7 @@
 [project]
 name = "bci-abs-scpi"
+# TODO: make this dynamic and configure a build backend that can generate the
+# version from git
 version = "1.0.0"
 authors = [
   { name="Bloomy Controls, Inc." },
