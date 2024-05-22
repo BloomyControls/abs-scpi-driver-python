@@ -1,0 +1,28 @@
+[project]
+name = "bci-abs-scpi"
+version = "1.0.0"
+authors = [
+  { name="Will Eccles", email="william.r.eccles@bloomy.com" },
+]
+description = "SCPI driver for the Bloomy Controls Advanced Battery Simulator"
+readme = "README.md"
+license.file = "LICENSE"
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+]
+
+[project.urls]
+homepage = "https://github.com/BloomyControls/abs-scpi-driver-python"
+source = "https://github.com/BloomyControls/abs-scpi-driver-python"
+issues = "https://github.com/BloomyControls/abs-scpi-driver-python/issues"
