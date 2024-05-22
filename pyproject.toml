@@ -2,7 +2,7 @@
 name = "bci-abs-scpi"
 version = "1.0.0"
 authors = [
-  { name="Will Eccles", email="william.r.eccles@bloomy.com" },
+  { name="Bloomy Controls, Inc." },
 ]
 description = "SCPI driver for the Bloomy Controls Advanced Battery Simulator"
 readme = "README.md"
