@@ -11,66 +11,134 @@ import platform
 LIB_NAME = "absscpi"
 
 CELL_COUNT = 8
+ANALOG_OUTPUT_COUNT = 8
+ANALOG_INPUT_COUNT = 8
+DIGITAL_OUTPUT_COUNT = 4
+DIGITAL_INPUT_COUNT = 4
 
 class AbsCellFault(IntEnum):
+    """ABS cell faulting mode."""
     NONE = 0
     OPEN_CIRCUIT = 1
     SHORT_CIRCUIT = 2
     POLARITY = 3
 
 class AbsCellSenseRange(IntEnum):
+    """ABS cell current sense range."""
     AUTO = 0
     LOW_1A = 1
     HIGH_5A = 2
 
 class AbsCellPrecisionMode(IntEnum):
+    """ABS cell precision mode."""
     NORMAL = 0
     HIGH_PRECISION = 1
     NOISE_REJECTION = 2
 
 class AbsCellMode(IntEnum):
+    """ABS cell operating mode."""
     CV = 0
     ILIM = 1
 
 class AbsDeviceInfo(Structure):
+    """Basic information about an ABS."""
+
     _fields_ = [("part_number", c_char * 128),
                 ("serial", c_char * 128),
                 ("version", c_char * 128)]
 
     def get_part_number(self) -> str:
+        """Get the device part number."""
         return self.part_number.decode()
 
     def get_serial(self) -> str:
+        """Get the device serial number."""
         return self.serial.decode()
 
     def get_version(self) -> str:
+        """Get the device software version."""
         return self.version.decode()
 
 class AbsEthernetConfig(Structure):
+    """ABS Ethernet address configuration."""
+
     _fields_ = [("ip", c_char * 32),
                 ("netmask", c_char * 32)]
 
     def get_ip_address(self) -> str:
+        """Get the IP address."""
         return self.ip.decode()
 
     def get_netmask(self) -> str:
+        """Get the subnet mask."""
         return self.netmask.decode()
 
 class AbsEthernetDiscoveryResult(Structure):
+    """ABS Ethernet discovery result."""
+
     _fields_ = [("ip", c_char * 32),
                 ("serial", c_char * 128)]
 
     def get_ip_address(self) -> str:
+        """Get the device's IP address."""
         return self.ip.decode()
 
     def get_serial(self) -> str:
+        """Get the device's serial number."""
+        return self.serial.decode()
+
+class AbsSerialDiscoveryResult(Structure):
+    """ABS serial discovery result."""
+
+    _fields_ = [("id", c_uint8),
+                ("serial", c_char * 128)]
+
+    def get_id(self) -> int:
+        """Get the device's serial ID."""
+        return self.id.value
+
+    def get_serial(self) -> str:
+        """Get the device's serial number."""
         return self.serial.decode()
 
 class ScpiClientError(Exception):
+    """SCPI client returned an error."""
     pass
 
 class ScpiClient:
+    """Client for communicating with the ABS with SCPI.
+
+    This class supports UDP, TCP, RS-485, and UDP multicast. When using serial
+    or multicast, it can broadcast messages to all units on the bus.
+
+    Typical usage example:
+
+        with ScpiClient() as client:
+            client.open_udp("192.168.1.70")
+            client.set_cell_voltage(0, 2.3)
+            client.enable_cell(0, True)
+            # give the cell time to settle
+            time.sleep(0.005)
+            print(f"Cell 1 measured voltage: {client.measure_cell_voltage(0)}")
+
+    To re-open the connection with the same or a different communication layer,
+    you can simply call the corresponding open_*() method at any time.
+    """
+
     def __init__(self, lib: str = LIB_NAME):
+        """Initialize the ScpiClient.
+
+        Args:
+            lib: Name of or path to the ABS SCPI DLL. This parameter is
+                optional. If the DLL is in a discoverable location such as
+                C:/Windows/System32 or /usr/lib, it will be found automatically.
+                If it is not automatically found, pass the path to the file to
+                this function.
+
+        Raises:
+            OSError: An error occurred while finding or loading the low-level
+                library.
+        """
         self.__handle = c_void_p()
 
         if platform.system() == "Windows":
@@ -945,13 +1013,269 @@ class ScpiClient:
         self.__check_err(res)
         return [AbsCellMode(m) for m in modes]
 
+    def set_analog_output(self, channel: int, voltage: float):
+        """Set a single analog output voltage.
+
+        Args:
+            channel: Target channel index, 0-7.
+            voltage: Target voltage.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        res = self.__dll.AbsScpiClient_SetAnalogOutput(
+                self.__handle, c_uint(channel), c_float(voltage))
+        self.__check_err(res)
+
+    def set_all_analog_outputs(self, voltages: list[float]):
+        """Set all analog output voltages.
+
+        Args:
+            voltages: An array of voltages, one per channel. Must not be empty
+                or longer than the total channel count.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        vals = (c_float * len(voltages))(*voltages)
+        res = self.__dll.AbsScpiClient_SetAllAnalogOutputs(
+                self.__handle, byref(vals), c_uint(len(voltages)))
+        self.__check_err(res)
+
+    def get_analog_output(self, channel: int) -> float:
+        """Query an analog output's set point.
+
+        Args:
+            channel: Target channel index, 0-7.
+
+        Returns:
+            The analog output's voltage.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        voltage = c_float()
+        res = self.__dll.AbsScpiClient_GetAnalogOutput(
+                self.__handle, c_uint(channel), byref(voltage))
+        self.__check_err(res)
+        return voltage.value
+
+    def get_all_analog_outputs(self) -> list[float]:
+        """Query all analog output voltages.
+
+        Returns:
+            An array of voltages, one per channel.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        voltages = (c_float * ANALOG_OUTPUT_COUNT)()
+        res = self.__dll.AbsScpiClient_GetAllAnalogOutputs(
+                self.__handle, byref(voltages), c_uint(ANALOG_OUTPUT_COUNT))
+        self.__check_err(res)
+        return voltages[:]
+
+    def set_digital_output(self, channel: int, level: bool):
+        """Set a single digital output.
+
+        Args:
+            channel: Target channel index, 0-3.
+            level: Desired output level.
+
+        Raises:
+            ScpiClientError: An error occurred while sending the command.
+        """
+        res = self.__dll.AbsScpiClient_SetDigitalOutput(
+                self.__handle, c_uint(channel), c_bool(level))
+        self.__check_err(res)
+
+    def set_all_digital_outputs(self, levels: list[bool]):
+        """Set all digital outputs.
+
+        Args:
+            levels: An array of output levels, one per channel. Must not be
+                longer than the total channel count.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        if len(levels) > DIGITAL_OUTPUT_COUNT:
+            raise ValueError("too many inputs")
+        elif len(levels) == 0:
+            return
+
+        mask = 0
+        for i in range(len(levels)):
+            if levels[i]:
+                mask |= (1 << i)
+
+        res = self.__dll.AbsScpiClient_SetAllDigitalOutputs(
+                self.__handle, c_uint(mask))
+        self.__check_err(res)
+
+    def get_digital_output(self, channel: int) -> bool:
+        """Query the state of a single digital output.
+
+        Args:
+            channel: Target channel index, 0-3.
+
+        Returns:
+            The state of the digital output.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        state = c_bool()
+        res = self.__dll.AbsScpiClient_GetDigitalOutput(
+                self.__handle, c_uint(channel), byref(state))
+        self.__check_err(res)
+        return state.value
+
+    def get_all_digital_outputs(self) -> list[bool]:
+        """Query the states of all digital outputs.
+
+        Returns:
+            An array of states, one per output.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        mask = c_uint()
+        res = self.__dll.AbsScpiClient_GetAllDigitalOutputs(
+                self.__handle, byref(mask))
+        self.__check_err(res)
+        m = mask.value
+        return [(m & (1 << i)) != 0 for i in range(DIGITAL_OUTPUT_COUNT)]
+
+    def measure_analog_input(self, channel: int) -> float:
+        """Measure a single analog input.
+
+        Args:
+            channel: Target channel index, 0-7.
+
+        Returns:
+            Measured voltage.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        voltage = c_float()
+        res = self.__dll.AbsScpiClient_MeasureAnalogInput(
+                self.__handle, c_uint(channel), byref(voltage))
+        self.__check_err(res)
+        return voltage.value
+
+    def measure_all_analog_inputs(self) -> list[float]:
+        """Measure all analog inputs.
+
+        Returns:
+            An array of voltages, one per channel.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        voltages = (c_float * ANALOG_INPUT_COUNT)()
+        res = self.__dll.AbsScpiClient_MeasureAllAnalogInputs(
+                self.__handle, byref(voltages), c_uint(ANALOG_INPUT_COUNT))
+        self.__check_err(res)
+        return voltages[:]
+
+    def measure_digital_input(self, channel: int) -> bool:
+        """Measure a single digital input.
+
+        Args:
+            channel: Target channel index, 0-3.
+
+        Returns:
+            The state of the digital input.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        val = c_bool()
+        res = self.__dll.AbsScpiClient_MeasureDigitalInput(
+                self.__handle, c_uint(channel), byref(val))
+        self.__check_err(res)
+        return val.value
+
+    def measure_all_digital_inputs(self) -> list[bool]:
+        """Measure all digital inputs.
+
+        Returns:
+            An array of states, one per input.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        mask = c_uint()
+        res = self.__dll.AbsScpiClient_MeasureAllDigitalInputs(
+                self.__handle, byref(mask))
+        self.__check_err(res)
+        m = mask.value
+        return [(m & (1 << i)) != 0 for i in range(DIGITAL_INPUT_COUNT)]
+
     def multicast_discovery(
         self,
         interface_ip: str,
     ) -> list[AbsEthernetDiscoveryResult]:
-        results = (AbsEthernetDiscoveryResult * 32)()
+        """Use UDP multicast to discovery ABSes on the network.
+
+        This function does not require the ScpiClient to be initialized or
+        connected.
+
+        Args:
+            interface_ip: IP address of the local NIC to bind to.
+
+        Returns:
+            List of discovered devices.
+
+        Raises:
+            ScpiClientError: An error occurred during discovery.
+        """
+        results = (AbsEthernetDiscoveryResult * 64)()
         count = c_uint(len(results))
         res = self.__dll.AbsScpiClient_MulticastDiscovery(
                 interface_ip.encode(), byref(results), byref(count))
+        self.__check_err(res)
+        return results[:count.value]
+
+    def serial_discovery(
+        self,
+        port: str,
+        first_id: int = 0,
+        last_id: int = 255,
+    ) -> list[AbsSerialDiscoveryResult]:
+        """Use RS-485 to discovery ABSes on the bus.
+
+        This function requires that the ScpiClient *not* be connected over
+        serial! This will interfere with opening the serial port.
+
+        Since this function operates by scanning all serial IDs in a range, it
+        can take upwards of 15 seconds to scan the full address space. It's
+        therefore recommended to limit the address range to the range you expect
+        devices to be in.
+
+        Args:
+            port: Serial port to use, such as COM1 or /dev/ttyS0.
+            first_id: First serial ID to check, 0-255.
+            last_id: Last serial ID to check (inclusive), 0-255. Must not be
+                less than first_id.
+
+        Returns:
+            List of discovered devices.
+
+        Raises:
+            ScpiClientError: An error occurred during discovery.
+        """
+        if last_id < 0 or last_id > 255 or first_id < 0 or first_id > 255:
+            raise ValueError("invalid ID")
+        elif last_id < first_id:
+            raise ValueError("last ID cannot be less than first ID")
+
+        count = c_uint(last_id - first_id + 1)
+        results = (AbsSerialDiscoveryResult * count.value)()
+        res = self.__dll.AbsScpiClient_SerialDiscovery(
+                port.encode(), c_uint8(first_id), c_uint8(last_id),
+                byref(results), byref(count))
         self.__check_err(res)
         return results[:count.value]
