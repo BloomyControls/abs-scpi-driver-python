@@ -29,12 +29,6 @@ class AbsCellSenseRange(IntEnum):
     LOW_1A = 1
     HIGH_5A = 2
 
-class AbsCellPrecisionMode(IntEnum):
-    """ABS cell precision mode."""
-    NORMAL = 0
-    HIGH_PRECISION = 1
-    NOISE_REJECTION = 2
-
 class AbsCellMode(IntEnum):
     """ABS cell operating mode."""
     CV = 0
@@ -882,35 +876,36 @@ class ScpiClient:
         self.__check_err(res)
         return [AbsCellSenseRange(r) for r in ranges]
 
-    def set_cell_precision_mode(self, mode: AbsCellPrecisionMode):
-        """Set the cell precision mode.
+    def enable_cell_noise_filter(self, en: bool):
+        """Enable or disable the cell 50/60Hz noise filter.
 
-        The device defaults to normal precision (high speed) mode.
+        This mode filters 50/60Hz noise and increases cell measurement accuracy,
+        but decreases the cell control rate to 10Hz.
 
         Args:
-            mode: Desired precision mode.
+            en: Desired filter state.
 
         Raises:
             ScpiClientError: An error occurred while sending the command.
         """
-        res = self.__dll.AbsScpiClient_SetCellPrecisionMode(
-                self.__handle, c_int(mode.value))
+        res = self.__dll.AbsScpiClient_EnableCellNoiseFilter(
+                self.__handle, c_bool(en))
         self.__check_err(res)
 
-    def get_cell_precision_mode(self) -> AbsCellPrecisionMode:
-        """Query the cell precision mode.
+    def get_cell_noise_filter_enabled(self) -> bool:
+        """Query the enable state of the cell 50/60Hz noise filter.
 
         Returns:
-            The cell precision mode.
+            The state of the noise filter.
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
         """
-        mode = c_int()
-        res = self.__dll.AbsScpiClient_GetCellPrecisionMode(
-                self.__handle, byref(mode))
+        en = c_bool()
+        res = self.__dll.AbsScpiClient_GetCellNoiseFilterEnabled(
+                self.__handle, byref(en))
         self.__check_err(res)
-        return AbsCellPrecisionMode(mode.value)
+        return en.value
 
     def measure_cell_voltage(self, cell: int) -> float:
         """Measure a single cell's voltage.
