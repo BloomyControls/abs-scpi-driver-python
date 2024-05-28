@@ -107,27 +107,28 @@ class ScpiClient:
 
     Typical usage example:
 
-        with ScpiClient() as client:
-            client.open_udp("192.168.1.70")
-            client.set_cell_voltage(0, 2.3)
-            client.enable_cell(0, True)
-            # give the cell time to settle
-            time.sleep(0.005)
-            print(f"Cell 1 measured voltage: {client.measure_cell_voltage(0)}")
+    .. code-block:: python
+
+       with ScpiClient() as client:
+           client.open_udp("192.168.1.70")
+           client.set_cell_voltage(0, 2.3)
+           client.enable_cell(0, True)
+           # give the cell time to settle
+           time.sleep(0.005)
+           print(f"Cell 1 measured voltage: {client.measure_cell_voltage(0)}")
 
     To re-open the connection with the same or a different communication layer,
     you can simply call the corresponding open_*() method at any time.
     """
 
     def __init__(self, lib: str = LIB_NAME):
-        """Initialize the ScpiClient.
-
+        """
         Args:
             lib: Name of or path to the ABS SCPI DLL. This parameter is
                 optional. If the DLL is in a discoverable location such as
-                C:/Windows/System32 or /usr/lib, it will be found automatically.
-                If it is not automatically found, pass the path to the file to
-                this function.
+                :file:`C:/Windows/System32` or :file:`/usr/lib`, it will be
+                found automatically. If it is not automatically found, pass the
+                path to the file to this function.
 
         Raises:
             OSError: An error occurred while finding or loading the low-level
@@ -158,7 +159,7 @@ class ScpiClient:
     def __exit__(self, exc_type, exc_value, traceback):
         self.cleanup()
 
-    def err_msg(self, err: int) -> str:
+    def __err_msg(self, err: int) -> str:
         """Get a string describing an error code.
 
         Args:
@@ -181,15 +182,17 @@ class ScpiClient:
             ScpiClientError: The error code is not successful.
         """
         if err < 0:
-            raise ScpiClientError(self.err_msg(err))
+            raise ScpiClientError(self.__err_msg(err))
 
     def init(self):
         """Initialize the client handle.
 
         Should not be called directly! Use a "with" block instead:
 
-            with ScpiClient() as client:
-                ...
+        .. code-block:: python
+
+           with ScpiClient() as client:
+               ...
 
         Raises:
             ScpiClientError: An error occurred during initialization.
@@ -202,8 +205,10 @@ class ScpiClient:
 
         Should not be called directly! Use a "with" block instead:
 
-            with ScpiClient() as client:
-                ...
+        .. code-block:: python
+
+           with ScpiClient() as client:
+               ...
         """
         self.__dll.AbsScpiClient_Destroy(byref(self.__handle))
 
