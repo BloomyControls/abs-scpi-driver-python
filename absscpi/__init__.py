@@ -22,4 +22,14 @@ __all__ = [
     "ScpiClient",
 ]
 
-from .client import *
+from .client import (
+    AbsCellFault,
+    AbsCellSenseRange,
+    AbsCellMode,
+    AbsDeviceInfo,
+    AbsEthernetConfig,
+    AbsEthernetDiscoveryResult,
+    AbsSerialDiscoveryResult,
+    ScpiClientError,
+    ScpiClient,
+)
