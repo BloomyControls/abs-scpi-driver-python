@@ -1,5 +1,5 @@
 [project]
-name = "bci-abs-scpi"
+name = "absscpi"
 # TODO: make this dynamic and configure a build backend that can generate the
 # version from git
 version = "1.0.0"

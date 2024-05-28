@@ -1,7 +1,7 @@
-Python SCPI Interface for Bloomy Controls ABS
-=============================================
+ABS SCPI Python Library (absscpi)
+=================================
 
-Python driver for SCPI control of the Bloomy Controls ABS.
+Python library for SCPI control of the Bloomy Controls ABS.
 
 Features
 --------
@@ -18,8 +18,8 @@ Features
 Installation
 ------------
 
-TODO. Install the C/C++ library either in a standard system path or somewhere
-else. If somewhere else, pass a path to the constructor of ``ScpiClient``.
+See `docs/installation.rst <docs/installation.rst>`__ for installation
+instructions.
 
 Example usage
 -------------
