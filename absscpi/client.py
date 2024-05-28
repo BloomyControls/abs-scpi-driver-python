@@ -187,12 +187,13 @@ class ScpiClient:
     def init(self):
         """Initialize the client handle.
 
-        Should not be called directly! Use a "with" block instead:
+        .. warning::
+           Should not be called directly! Use a "with" block instead:
 
-        .. code-block:: python
+           .. code-block:: python
 
-           with ScpiClient() as client:
-               ...
+              with ScpiClient() as client:
+                  ...
 
         Raises:
             ScpiClientError: An error occurred during initialization.
@@ -203,12 +204,13 @@ class ScpiClient:
     def cleanup(self):
         """Cleanup the client handle.
 
-        Should not be called directly! Use a "with" block instead:
+        .. warning::
+           Should not be called directly! Use a "with" block instead:
 
-        .. code-block:: python
+           .. code-block:: python
 
-           with ScpiClient() as client:
-               ...
+              with ScpiClient() as client:
+                  ...
         """
         self.__dll.AbsScpiClient_Destroy(byref(self.__handle))
 
