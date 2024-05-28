@@ -6,7 +6,12 @@ Controls ABS over TCP, UDP, RS-485, and UDP multicast. This library is a wrapper
 around the `native C/C++ SCPI driver <native_>`_ for the ABS to avoid
 unnecessary Python performance overhead.
 
-.. TODO add an example (just include one from an example file)
+A simple example showing how to connect to an ABS over UDP and control and
+measure one cell:
+
+.. literalinclude:: ../examples/single_cell.py
+   :language: python
+   :linenos:
 
 .. toctree::
    :maxdepth: 2
