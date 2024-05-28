@@ -15,10 +15,14 @@ Features
 
 .. _the C/C++ library: https://github.com/BloomyControls/abs-scpi-driver
 
+Installation
+------------
+
+TODO. Install the C/C++ library either in a standard system path or somewhere
+else. If somewhere else, pass a path to the constructor of ``ScpiClient``.
+
 Example usage
 -------------
-
-.. TODO installation
 
 .. code:: python
 
