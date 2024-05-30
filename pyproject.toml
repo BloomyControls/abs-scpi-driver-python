@@ -1,13 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "absscpi"
-# TODO: make this dynamic and configure a build backend that can generate the
-# version from git
-version = "1.0.0"
+dynamic = ["version"]
 authors = [
   { name="Bloomy Controls, Inc." },
 ]
 description = "SCPI driver for the Bloomy Controls Advanced Battery Simulator"
-readme = "README.md"
+readme = "README.rst"
 license.file = "LICENSE"
 requires-python = ">=3.8"
 classifiers = [
@@ -28,3 +30,6 @@ classifiers = [
 homepage = "https://github.com/BloomyControls/abs-scpi-driver-python"
 source = "https://github.com/BloomyControls/abs-scpi-driver-python"
 issues = "https://github.com/BloomyControls/abs-scpi-driver-python/issues"
+
+[tool.hatch.version]
+path = "absscpi/__init__.py"

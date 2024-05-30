@@ -11,10 +11,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 
+import absscpi
+
 project = 'absscpi'
 copyright = '2024, Bloomy Controls'
 author = 'Bloomy Controls'
-release = '1.0.0'
+release = absscpi.__version__
 
 primary_domain = "py"
 
