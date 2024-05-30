@@ -27,6 +27,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    'sphinx.ext.todo',
     'sphinx_copybutton',
     'sphinx_inline_tabs',
 ]
@@ -36,6 +37,9 @@ root_doc = 'index'
 source_suffix = '.rst'
 
 manpages_url = 'https://www.man7.org/linux/man-pages/man{section}/{page}.{section}.html'
+
+todo_include_todos = True
+todo_emit_warnings = True
 
 # include documentation from both the class level and __init__
 autoclass_content = 'both'
