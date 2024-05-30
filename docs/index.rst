@@ -26,5 +26,9 @@ Known Bugs
 
 See the `bug tracker`_ on GitHub. Contributions welcome!
 
+.. admonition:: Documentation generated
+
+   |today|
+
 .. _native: https://github.com/BloomyControls/abs-scpi-driver
 .. _bug tracker: https://github.com/BloomyControls/abs-scpi-driver-python/issues
