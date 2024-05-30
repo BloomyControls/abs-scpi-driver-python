@@ -48,15 +48,20 @@ If you choose to install the library to a custom location and
 :func:`~absscpi.ScpiClient` doesn't automatically find it, you can manually tell
 it where you put the library. For example:
 
-.. code-block:: python
+.. tab:: Windows
 
-   # Windows:
-   with ScpiClient(lib="C:/Users/me/path/to/absscpi.dll") as client:
-       pass
+   .. code-block:: python
 
-   # Linux:
-   with ScpiClient(lib="/home/me/path/to/libabsscpi.so") as client:
-       pass
+      with ScpiClient(lib="C:/Users/me/path/to/absscpi.dll") as client:
+          pass
+
+
+.. tab:: Linux
+
+   .. code-block:: python
+
+      with ScpiClient(lib="/home/me/path/to/libabsscpi.so") as client:
+          pass
 
 Linux alternative: using ``LD_LIBRARY_PATH``
 """"""""""""""""""""""""""""""""""""""""""""

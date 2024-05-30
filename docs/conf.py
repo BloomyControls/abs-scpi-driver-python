@@ -28,6 +28,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_copybutton',
+    'sphinx_inline_tabs',
 ]
 
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
