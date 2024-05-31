@@ -34,7 +34,7 @@ environment <venv_>`_:
 
 To install requirements for building::
 
-    python -m pip install -r dev-requirements.txt
+    python -m pip install build
 
 To install the project locally from source::
 
