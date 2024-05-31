@@ -118,7 +118,7 @@ class ScpiClient:
            print(f"Cell 1 measured voltage: {client.measure_cell_voltage(0)}")
 
     To re-open the connection with the same or a different communication layer,
-    you can simply call the corresponding open_*() method at any time.
+    you can simply call the corresponding ``open_*()`` method at any time.
     """
 
     def __init__(self, lib: str = LIB_NAME):
