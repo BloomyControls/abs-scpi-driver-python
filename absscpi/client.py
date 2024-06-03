@@ -1220,7 +1220,7 @@ class ScpiClient:
         self,
         interface_ip: str,
     ) -> list[AbsEthernetDiscoveryResult]:
-        """Use UDP multicast to discovery ABSes on the network.
+        """Use UDP multicast to discover ABSes on the network.
 
         This function does not require the ScpiClient to be initialized or
         connected.
@@ -1247,7 +1247,7 @@ class ScpiClient:
         first_id: int = 0,
         last_id: int = 255,
     ) -> list[AbsSerialDiscoveryResult]:
-        """Use RS-485 to discovery ABSes on the bus.
+        """Use RS-485 to discover ABSes on the bus.
 
         This function requires that the ScpiClient *not* be connected over
         serial! This will interfere with opening the serial port.
