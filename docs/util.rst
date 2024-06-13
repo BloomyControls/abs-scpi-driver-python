@@ -16,6 +16,10 @@ Enumerations
    :members:
    :undoc-members:
 
+.. autoclass:: absscpi.AbsModelStatus
+   :members:
+   :undoc-members:
+
 Structures
 ----------
 
@@ -23,6 +27,12 @@ Structures
    :members:
 
 .. autoclass:: absscpi.AbsEthernetConfig
+   :members:
+
+.. autoclass:: absscpi.AbsModelInfo
+   :members:
+
+.. autoclass:: absscpi.AbsModelOutputPair
    :members:
 
 .. autoclass:: absscpi.AbsEthernetDiscoveryResult
