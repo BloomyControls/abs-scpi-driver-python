@@ -5,7 +5,7 @@
 
 from ctypes import *
 from ctypes.util import find_library
-from enum import IntEnum
+from enum import IntEnum, IntFlag
 import platform
 
 LIB_NAME = "absscpi"
@@ -15,6 +15,9 @@ ANALOG_OUTPUT_COUNT = 8
 ANALOG_INPUT_COUNT = 8
 DIGITAL_OUTPUT_COUNT = 4
 DIGITAL_INPUT_COUNT = 4
+GLOBAL_MODEL_INPUT_COUNT = 8
+LOCAL_MODEL_INPUT_COUNT = 8
+MODEL_OUTPUT_COUNT = 18
 
 class AbsCellFault(IntEnum):
     """ABS cell faulting mode."""
@@ -66,6 +69,36 @@ class AbsEthernetConfig(Structure):
     def get_netmask(self) -> str:
         """Get the subnet mask."""
         return self.netmask.decode()
+
+class AbsModelStatus(IntFlag):
+    """Bits used to decode the ABS model status."""
+    RUNNING = 0x01
+    LOADED = 0x02
+    ERRORED = 0x04
+
+class AbsModelInfo(Structure):
+    """Information about a model."""
+
+    _fields_ = [("name", c_char * 256),
+                ("version", c_char * 256)]
+
+    def get_name(self) -> str:
+        """Get the model's name."""
+        return self.name.decode()
+
+    def get_version(self) -> str:
+        """Get the model's version."""
+        return self.version.decode()
+
+class AbsModelOutputPair(Structure):
+    """ABS model output pair."""
+
+    _fields_ = [("value_0", c_float),
+                ("value_1", c_float)]
+
+    def to_tuple(self) -> tuple[float, float]:
+        """Get the values as a tuple."""
+        return (self.value_0.value, self.value_1.value)
 
 class AbsEthernetDiscoveryResult(Structure):
     """ABS Ethernet discovery result."""
@@ -1215,6 +1248,239 @@ class ScpiClient:
         self.__check_err(res)
         m = mask.value
         return [(m & (1 << i)) != 0 for i in range(DIGITAL_INPUT_COUNT)]
+
+    def get_model_status(self) -> AbsModelStatus:
+        """Query the model status bits.
+
+        Returns:
+            Model status.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        val = c_uint8()
+        res = self.__dll.AbsScpiClient_GetModelStatus(self.__handle, byref(val))
+        self.__check_err(res)
+        return AbsModelStatus(val.value)
+
+    def load_model(self):
+        """Load the model configuration on the device.
+
+        Raises:
+            ScpiClientError: An error occurred while sending the command.
+        """
+        self.__check_err(self.__dll.AbsScpiClient_LoadModel(self.__handle))
+
+    def start_model(self):
+        """Start modeling.
+
+        Raises:
+            ScpiClientError: An error occurred while sending the command.
+        """
+        self.__check_err(self.__dll.AbsScpiClient_StartModel(self.__handle))
+
+    def stop_model(self):
+        """Stop modeling.
+
+        Raises:
+            ScpiClientError: An error occurred while sending the command.
+        """
+        self.__check_err(self.__dll.AbsScpiClient_StopModel(self.__handle))
+
+    def unload_model(self):
+        """Unload the model configuration.
+
+        Raises:
+            ScpiClientError: An error occurred while sending the command.
+        """
+        self.__check_err(self.__dll.AbsScpiClient_UnloadModel(self.__handle))
+
+    def get_model_info(self) -> AbsModelInfo:
+        """Query information about the model.
+
+        Returns:
+            Model information.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        info = AbsModelInfo()
+        res = self.__dll.AbsScpiClient_GetModelInfo(self.__handle, byref(info))
+        self.__check_err(res)
+        return info
+
+    def set_global_model_input(self, index: int, value: float):
+        """Set a single global model input.
+
+        This function is particularly useful with multicast to address multiple
+        units.
+
+        Args:
+            index: The input index, 0-7.
+            value: The input value.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        res = self.__dll.AbsScpiClient_SetGlobalModelInput(
+                self.__handle, c_uint(index), c_float(value))
+        self.__check_err(res)
+
+    def set_all_global_model_inputs(self, values: list[float]):
+        """Set all global model inputs.
+
+        This function is particularly useful with multicast to address multiple
+        units.
+
+        Args:
+            values: An array of values, one per input. Must not be longer than
+                the total input count.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        if len(values) > GLOBAL_MODEL_INPUT_COUNT:
+            raise ValueError("too many inputs")
+        elif len(values) == 0:
+            return
+
+        vals = (c_float * len(values))(*values)
+        res = self.__dll.AbsScpiClient_SetAllGlobalModelInputs(
+                self.__handle, byref(vals), c_uint(len(values)))
+        self.__check_err(res)
+
+    def get_global_model_input(self, index: int) -> float:
+        """Query a single global model input.
+
+        Args:
+            index: The input index, 0-7.
+
+        Returns:
+            The value of the input.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        val = c_float()
+        res = self.__dll.AbsScpiClient_GetGlobalModelInput(
+                self.__handle, c_uint(index), byref(val))
+        self.__check_err(res)
+        return val.value
+
+    def get_all_global_model_inputs(self) -> list[float]:
+        """Query all global model inputs.
+
+        Returns:
+            A list of values, one per input.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        vals = (c_float * GLOBAL_MODEL_INPUT_COUNT)()
+        res = self.__dll.AbsScpiClient_GetAllGlobalModelInputs(
+                self.__handle, byref(vals), c_uint(GLOBAL_MODEL_INPUT_COUNT))
+        self.__check_err(res)
+        return vals[:]
+
+    def set_local_model_input(self, index: int, value: float):
+        """Set a single local model input.
+
+        Args:
+            index: The input index, 0-7.
+            value: The input value.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        res = self.__dll.AbsScpiClient_SetLocalModelInput(
+                self.__handle, c_uint(index), c_float(value))
+        self.__check_err(res)
+
+    def set_all_local_model_inputs(self, values: list[float]):
+        """Set all local model inputs.
+
+        Args:
+            values: An array of values, one per input. Must not be longer than
+                the total input count.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        if len(values) > LOCAL_MODEL_INPUT_COUNT:
+            raise ValueError("too many inputs")
+        elif len(values) == 0:
+            return
+
+        vals = (c_float * len(values))(*values)
+        res = self.__dll.AbsScpiClient_SetAllLocalModelInputs(
+                self.__handle, byref(vals), c_uint(len(values)))
+        self.__check_err(res)
+
+    def get_local_model_input(self, index: int) -> float:
+        """Query a single local model input.
+
+        Args:
+            index: The input index, 0-7.
+
+        Returns:
+            The value of the input.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        val = c_float()
+        res = self.__dll.AbsScpiClient_GetLocalModelInput(
+                self.__handle, c_uint(index), byref(val))
+        self.__check_err(res)
+        return val.value
+
+    def get_all_local_model_inputs(self) -> list[float]:
+        """Query all local model inputs.
+
+        Returns:
+            A list of values, one per input.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the command.
+        """
+        vals = (c_float * LOCAL_MODEL_INPUT_COUNT)()
+        res = self.__dll.AbsScpiClient_GetAllLocalModelInputs(
+                self.__handle, byref(vals), c_uint(LOCAL_MODEL_INPUT_COUNT))
+        self.__check_err(res)
+        return vals[:]
+
+    def get_model_output(self, index: int) -> tuple[float, float]:
+        """Query a single pair of model outputs.
+
+        Args:
+            index: Output index, 0-17.
+
+        Returns:
+            The model output pair.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        pair = AbsModelOutputPair()
+        res = self.__dll.AbsScpiClient_GetModelOutput(
+                self.__handle, c_uint(index), byref(pair))
+        self.__check_err(res)
+        return pair.to_tuple()
+
+    def get_all_model_outputs(self) -> list[tuple[float, float]]:
+        """Query all model output pairs.
+
+        Returns:
+            A list of all model output pairs.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        pairs = (AbsModelOutputPair * MODEL_OUTPUT_COUNT)()
+        res = self.__dll.AbsScpiClient_GetAllModelOutputs(
+                self.__handle, byref(pairs), c_uint(MODEL_OUTPUT_COUNT))
+        self.__check_err(res)
+        return [p.to_tuple() for p in pairs]
 
     def multicast_discovery(
         self,
