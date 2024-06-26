@@ -6,6 +6,7 @@
 from ctypes import *
 from ctypes.util import find_library
 from enum import IntEnum, IntFlag
+import os
 import platform
 
 LIB_NAME = "absscpi"
@@ -159,9 +160,10 @@ class ScpiClient:
         Args:
             lib: Name of or path to the ABS SCPI DLL. This parameter is
                 optional. If the DLL is in a discoverable location such as
-                :file:`C:/Windows/System32` or :file:`/usr/lib`, it will be
-                found automatically. If it is not automatically found, pass the
-                path to the file to this function.
+                :file:`C:/Windows/System32` or :file:`/usr/lib`, or if it was
+                installed to the default path by the Windows MSI installer, it
+                will be found automatically. If it is not automatically found,
+                pass the path to the file to this function.
 
         Raises:
             OSError: An error occurred while finding or loading the low-level
@@ -173,6 +175,10 @@ class ScpiClient:
             load_library_func = windll.LoadLibrary
         else:
             load_library_func = cdll.LoadLibrary
+
+        if platform.system() == "Windows" and lib is LIB_NAME:
+            # add the Windows install directory to the lookup path
+            os.environ['PATH'] += f";{os.environ['ProgramFiles']}/Bloomy Controls/absscpi/bin"
 
         lib_path = find_library(lib)
         if not lib_path:

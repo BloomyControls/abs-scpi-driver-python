@@ -14,17 +14,20 @@ C/C++ driver installation
 -------------------------
 
 This library depends on the `native C/C++ library <native_>`_. First, download
-the appropriate zip file for your platform from the `latest release`_.
+the appropriate zip file for your platform or the Windows MSI installer from the
+`latest release`_.
 
 Windows
 ^^^^^^^
 
-For the Python library to automatically find the driver DLL, copy the downloaded
-DLLs to :file:`C:/Windows/System32`.
+The simplest way to install the drivers on Windows is to use the MSI installer.
+This will by default install the library to :file:`C:/Program Files
+[(x86)]/Bloomy Controls/absscpi`. The Python library will find it automatically.
 
 If you do not have administrator privileges or would prefer not to place files
 in :file:`System32` for some other reason, you may place the DLLs wherever you
-like. For details, see :ref:`custom-location`.
+like using the zip archive download option. For details,
+see :ref:`custom-location`.
 
 Linux
 ^^^^^
