@@ -288,7 +288,7 @@ class ScpiClient:
 
         Args:
             port: Serial port, such as "COM1" or "/dev/ttyS1."
-            device_id: Device's serial ID, 0-255, or 256+ to address all units
+            device_id: Device's serial ID, 0-31, or 32+ to address all units
                 on the bus.
 
         Raises:
@@ -319,7 +319,7 @@ class ScpiClient:
         Only applies to RS-485 connections.
 
         Args:
-            device_id: Target device ID, 0-255, or 256+ to broadcast to all
+            device_id: Target device ID, 0-31, or 32+ to broadcast to all
                 units on the bus.
 
         Raises:
@@ -1517,22 +1517,17 @@ class ScpiClient:
         self,
         port: str,
         first_id: int = 0,
-        last_id: int = 255,
+        last_id: int = 31,
     ) -> list[AbsSerialDiscoveryResult]:
         """Use RS-485 to discover ABSes on the bus.
 
         This function requires that the ScpiClient *not* be connected over
         serial! This will interfere with opening the serial port.
 
-        Since this function operates by scanning all serial IDs in a range, it
-        can take upwards of 15 seconds to scan the full address space. It's
-        therefore recommended to limit the address range to the range you expect
-        devices to be in.
-
         Args:
             port: Serial port to use, such as COM1 or /dev/ttyS0.
-            first_id: First serial ID to check, 0-255.
-            last_id: Last serial ID to check (inclusive), 0-255. Must not be
+            first_id: First serial ID to check, 0-31.
+            last_id: Last serial ID to check (inclusive), 0-31. Must not be
                 less than first_id.
 
         Returns:
@@ -1541,7 +1536,7 @@ class ScpiClient:
         Raises:
             ScpiClientError: An error occurred during discovery.
         """
-        if last_id < 0 or last_id > 255 or first_id < 0 or first_id > 255:
+        if last_id < 0 or last_id > 31 or first_id < 0 or first_id > 31:
             raise ValueError("invalid ID")
         elif last_id < first_id:
             raise ValueError("last ID cannot be less than first ID")

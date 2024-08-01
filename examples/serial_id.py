@@ -13,9 +13,9 @@ def serial_ids_demo(port: str, ids: list[int]):
         ids: List of serial IDs to talk to.
     """
     with ScpiClient() as client:
-        # first, let's send a message to all units by addressing 256
-        # (any number greater than 255 will work)
-        client.open_serial(port, 256)
+        # first, let's send a message to all units by addressing 32
+        # (any number greater than 31 will work)
+        client.open_serial(port, 32)
 
         # set cell 1 to 1.5V on every device
         client.set_cell_voltage(0, 1.5)
