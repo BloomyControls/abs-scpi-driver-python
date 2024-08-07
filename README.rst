@@ -32,7 +32,7 @@ Example usage
 
    with ScpiClient() as client:
        # open a UDP socket
-       client.open_udp("192.168.1.70")
+       client.open_udp("192.168.1.100")
 
        # get general device information
        id = client.get_device_id()

@@ -144,7 +144,7 @@ class ScpiClient:
     .. code-block:: python
 
        with ScpiClient() as client:
-           client.open_udp("192.168.1.70")
+           client.open_udp("192.168.1.100")
            client.set_cell_voltage(0, 2.3)
            client.enable_cell(0, True)
            # give the cell time to settle

@@ -52,7 +52,7 @@ if __name__ == "__main__":
             'get', help="query the ABS's IP address")
 
     parser_set = subparsers.add_parser('set', help="set the ABS's IP address")
-    parser_set.add_argument('ip', help='IPv4 address, e.g., 192.168.1.70')
+    parser_set.add_argument('ip', help='IPv4 address, e.g., 192.168.1.100')
     parser_set.add_argument(
             'netmask', nargs='?', default='255.255.255.0',
             help='optional subnet mask, e.g., 255.255.255.0')
