@@ -18,7 +18,7 @@ DIGITAL_OUTPUT_COUNT = 4
 DIGITAL_INPUT_COUNT = 4
 GLOBAL_MODEL_INPUT_COUNT = 8
 LOCAL_MODEL_INPUT_COUNT = 8
-MODEL_OUTPUT_COUNT = 18
+MODEL_OUTPUT_COUNT = 36
 
 class AbsCellFault(IntEnum):
     """ABS cell faulting mode."""
@@ -90,16 +90,6 @@ class AbsModelInfo(Structure):
     def get_version(self) -> str:
         """Get the model's version."""
         return self.version.decode()
-
-class AbsModelOutputPair(Structure):
-    """ABS model output pair."""
-
-    _fields_ = [("value_0", c_float),
-                ("value_1", c_float)]
-
-    def to_tuple(self) -> tuple[float, float]:
-        """Get the values as a tuple."""
-        return (self.value_0.value, self.value_1.value)
 
 class AbsEthernetDiscoveryResult(Structure):
     """ABS Ethernet discovery result."""
@@ -1455,38 +1445,38 @@ class ScpiClient:
         self.__check_err(res)
         return vals[:]
 
-    def get_model_output(self, index: int) -> tuple[float, float]:
-        """Query a single pair of model outputs.
+    def get_model_output(self, index: int) -> float:
+        """Query a single model output.
 
         Args:
-            index: Output index, 0-17.
+            index: Output index, 0-35.
 
         Returns:
-            The model output pair.
+            The model output.
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
         """
-        pair = AbsModelOutputPair()
+        val = c_float()
         res = self.__dll.AbsScpiClient_GetModelOutput(
-                self.__handle, c_uint(index), byref(pair))
+                self.__handle, c_uint(index), byref(val))
         self.__check_err(res)
-        return pair.to_tuple()
+        return val.value
 
-    def get_all_model_outputs(self) -> list[tuple[float, float]]:
-        """Query all model output pairs.
+    def get_all_model_outputs(self) -> list[float]:
+        """Query all model outputs.
 
         Returns:
-            A list of all model output pairs.
+            A list of all model outputs.
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
         """
-        pairs = (AbsModelOutputPair * MODEL_OUTPUT_COUNT)()
+        values = (c_float * MODEL_OUTPUT_COUNT)()
         res = self.__dll.AbsScpiClient_GetAllModelOutputs(
-                self.__handle, byref(pairs), c_uint(MODEL_OUTPUT_COUNT))
+                self.__handle, byref(values), c_uint(MODEL_OUTPUT_COUNT))
         self.__check_err(res)
-        return [p.to_tuple() for p in pairs]
+        return values[:]
 
     def multicast_discovery(
         self,

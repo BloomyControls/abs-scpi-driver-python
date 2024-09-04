@@ -32,9 +32,6 @@ Structures
 .. autoclass:: absscpi.AbsModelInfo
    :members:
 
-.. autoclass:: absscpi.AbsModelOutputPair
-   :members:
-
 .. autoclass:: absscpi.AbsEthernetDiscoveryResult
    :members:
 
