@@ -477,6 +477,23 @@ class ScpiClient:
         self.__check_err(res)
         return alarms.value
 
+    def get_interlock_state(self) -> bool:
+        """Query the system interlock state. When in interlock, the system will
+        be put into its PoR state and cannot be controlled until the interlock
+        is lifted.
+
+        Returns:
+            The interlock state.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        state = c_bool()
+        res = self.__dll.AbsScpiClient_GetInterlockState(
+                self.__handle, byref(state))
+        self.__check_err(res)
+        return state.value
+
     def assert_soft_interlock(self):
         """Assert the software interlock (a recoverable alarm).
 
