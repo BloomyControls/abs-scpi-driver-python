@@ -290,6 +290,17 @@ class ScpiClient:
                 self.__handle, port.encode(), c_uint(device_id))
         self.__check_err(res)
 
+    def close(self):
+        """Close client connection.
+
+        It is not an error if the client is not connected.
+
+        Raises:
+            ScpiClientError: An error occurred while closing the connection.
+        """
+        res = self.__dll.AbsScpiClient_Close(self.__handle)
+        self.__check_err(res)
+
     def open_udp_multicast(self, interface_ip: str):
         """Open a UDP multicast socket for broadcasting to many ABSes.
 
