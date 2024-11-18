@@ -30,6 +30,7 @@ classifiers = [
 homepage = "https://github.com/BloomyControls/abs-scpi-driver-python"
 source = "https://github.com/BloomyControls/abs-scpi-driver-python"
 issues = "https://github.com/BloomyControls/abs-scpi-driver-python/issues"
+documentation = "https://bloomycontrols.github.io/abs-scpi-driver-python"
 
 [tool.hatch.version]
 path = "absscpi/__init__.py"
