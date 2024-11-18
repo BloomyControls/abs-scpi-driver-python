@@ -52,10 +52,8 @@ Creating a New Release
 - Always release from the ``main`` branch.
 - Update the version, either using ``hatch version`` or by manually editing
   ``__init__.py``.
-- Build distribution package: ``python -m build``.
-
-.. todo::
-
-   Finish this documentation when release packaging/uploading is sorted out.
+- To build distribution package: ``python -m build``.
+- To create a release and publish to PyPI, push a tag to the ``main`` branch.
+  Make sure you have updated the version appropriately first!
 
 .. _venv: https://docs.python.org/3/library/venv.html

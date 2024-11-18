@@ -1,13 +1,6 @@
 Installation
 ============
 
-.. attention::
-   This library is not yet hosted on PyPI, so the instructions below will not
-   work yet. For the time being, install from the wheel which can be downloaded
-   from the latest release::
-
-       $ pip install absscpi-[version]-py3-none-any.whl
-
 Install the ``absscpi`` package from PyPI with ``pip`` or similar::
 
     $ pip install absscpi
