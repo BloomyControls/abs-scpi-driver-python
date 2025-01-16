@@ -10,7 +10,7 @@ This ``absscpi`` module provides a SCPI client for communicating with the Bloomy
 Controls Advanced Battery Simulator through TCP, UDP, RS-485, and UDP multicast.
 """
 
-__version__ = "0.3.0"
+__version__ = "1.0.0"
 
 __all__ = [
     "AbsCellFault",
