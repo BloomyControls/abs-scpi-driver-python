@@ -1333,6 +1333,22 @@ class ScpiClient:
         self.__check_err(res)
         return info
 
+    def get_model_id(self) -> str:
+        """Query the ID of the currently loaded model. This ID is user-defined
+        and is not used by the unit. It is intended for use by tools.
+
+        Returns:
+            Model ID.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        buf = create_string_buffer(256)
+        res = self.__dll.AbsScpiClient_GetModelId(
+                self.__handle, byref(buf), c_uint(len(buf)))
+        self.__check_err(res)
+        return buf.value.decode()
+
     def set_global_model_input(self, index: int, value: float):
         """Set a single global model input.
 
