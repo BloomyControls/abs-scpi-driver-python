@@ -26,8 +26,7 @@ Example usage
 
 .. code:: python
 
-   # import the library
-   import absscpi
+   from absscpi import ScpiClient
    from time import sleep
 
    with ScpiClient() as client:
@@ -39,7 +38,7 @@ Example usage
        ident = client.get_device_info()
        print(f"Device ID: {id}")
        print(f"Part numer: {ident.get_part_number()}")
-       print(f"Serial number: {ident.get_serial_number()}")
+       print(f"Serial number: {ident.get_serial()}")
        print(f"FW version: {ident.get_version()}")
 
        # command cell 1 to 1.4V
