@@ -181,6 +181,12 @@ class ScpiClient:
                     f"The SCPI library could not be loaded ({lib_path})"
                     ) from None
 
+        # assume we're at version 1.0.0 unless we can load the version function
+        # and find out otherwise (this function is new in 1.1.0)
+        self.__lib_version = 1_00_00
+        if hasattr(self.__dll, "AbsScpiClient_Version"):
+            self.__lib_version = self.__dll.AbsScpiClient_Version()
+
     def __enter__(self):
         self.init()
         return self
