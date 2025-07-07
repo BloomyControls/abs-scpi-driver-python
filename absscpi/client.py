@@ -1076,6 +1076,10 @@ class ScpiClient:
         At the default sample rate, this is a 10ms window. With filtering on,
         the length of this window will change.
 
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
         Args:
             cell: Target cell index, 0-7.
 
@@ -1084,6 +1088,8 @@ class ScpiClient:
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
         """
         self.__ensure_ver(1,1,0)
         voltage = c_float()
@@ -1099,11 +1105,17 @@ class ScpiClient:
         At the default sample rate, this is a 10ms window. With filtering on,
         the length of this window will change.
 
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
         Returns:
             Array of average voltages, one per cell.
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
         """
         self.__ensure_ver(1,1,0)
         voltages = (c_float * CELL_COUNT)()
@@ -1119,6 +1131,10 @@ class ScpiClient:
         At the default sample rate, this is a 10ms window. With filtering on,
         the length of this window will change.
 
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
         Args:
             cell: Target cell index, 0-7.
 
@@ -1127,6 +1143,8 @@ class ScpiClient:
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
         """
         self.__ensure_ver(1,1,0)
         current = c_float()
@@ -1142,11 +1160,17 @@ class ScpiClient:
         At the default sample rate, this is a 10ms window. With filtering on,
         the length of this window will change.
 
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
         Returns:
             Array of average currents, one per cell.
 
         Raises:
             ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
         """
         self.__ensure_ver(1,1,0)
         currents = (c_float * CELL_COUNT)()
