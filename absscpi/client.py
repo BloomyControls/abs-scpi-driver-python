@@ -1043,6 +1043,88 @@ class ScpiClient:
         self.__check_err(res)
         return currents[:]
 
+    def measure_average_cell_voltage(self, cell: int) -> float:
+        """Retrieve the rolling average of the last 10 voltage measurements for
+        a single cell.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        Args:
+            cell: Target cell index, 0-7.
+
+        Returns:
+            Average measured cell voltage.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        voltage = c_float()
+        res = self.__dll.AbsScpiClient_MeasureAverageCellVoltage(
+                self.__handle, c_uint(cell), byref(voltage))
+        self.__check_err(res)
+        return voltage.value
+
+    def measure_all_average_cell_voltages(self) -> list[float]:
+        """Retrieve the rolling average of the last 10 voltage measurements for
+        all cells.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        Returns:
+            Array of average voltages, one per cell.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        voltages = (c_float * CELL_COUNT)()
+        res = self.__dll.AbsScpiClient_MeasureAllAverageCellVoltages(
+                self.__handle, byref(voltages), c_uint(CELL_COUNT))
+        self.__check_err(res)
+        return voltages[:]
+
+    def measure_average_cell_current(self, cell: int) -> float:
+        """Retrieve the rolling average of the last 10 current measurements for
+        a single cell.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        Args:
+            cell: Target cell index, 0-7.
+
+        Returns:
+            Average measured cell current.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        current = c_float()
+        res = self.__dll.AbsScpiClient_MeasureAverageCellCurrent(
+                self.__handle, c_uint(cell), byref(current))
+        self.__check_err(res)
+        return current.value
+
+    def measure_all_average_cell_currents(self) -> list[float]:
+        """Retrieve the rolling average of the last 10 current measurements for
+        all cells.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        Returns:
+            Array of average currents, one per cell.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+        """
+        currents = (c_float * CELL_COUNT)()
+        res = self.__dll.AbsScpiClient_MeasureAllAverageCellCurrents(
+                self.__handle, byref(currents), c_uint(CELL_COUNT))
+        self.__check_err(res)
+        return currents[:]
+
     def get_cell_operating_mode(self, cell: int) -> AbsCellMode:
         """Query a single cell's operating mode (constant voltage or current
         limited).
