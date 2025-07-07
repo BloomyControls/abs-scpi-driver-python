@@ -20,6 +20,9 @@ GLOBAL_MODEL_INPUT_COUNT = 8
 LOCAL_MODEL_INPUT_COUNT = 8
 MODEL_OUTPUT_COUNT = 36
 
+def libver_to_str(libver: int) -> str:
+    return f"{libver // 10000}.{(libver % 10000) // 100}.{libver % 100}"
+
 class AbsCellFault(IntEnum):
     """ABS cell faulting mode."""
     NONE = 0
@@ -218,6 +221,29 @@ class ScpiClient:
         """
         if err < 0:
             raise ScpiClientError(self.__err_msg(err))
+
+    def __ensure_ver(self, req_maj: int, req_min: int, req_patch: int):
+        """Ensure that the low-level library's version is high enough to support
+        a command.
+
+        Args:
+            req_maj: The required major library version. For example, if v1.2.3
+                is required, this value should be 1.
+            req_min: The required minimum library version. For example, if
+                v1.2.3 is required, this value should be 2.
+            req_patch: The required patch library version. For example, if
+                v1.2.3 is required, this value should be 3.
+
+        Raises:
+            ScpiClientError: The required version is not met.
+        """
+        required_ver = req_maj * 10000 + req_min * 100 + req_patch
+        if self.__lib_version < required_ver:
+            req_str = libver_to_str(required_ver)
+            found_str = libver_to_str(self.__lib_version)
+            raise ScpiClientError("SCPI library is too old! " +
+                                  f"Required version {req_str}, " +
+                                  f"found version {found_str}.")
 
     def init(self):
         """Initialize the client handle.
@@ -1039,6 +1065,116 @@ class ScpiClient:
         """
         currents = (c_float * CELL_COUNT)()
         res = self.__dll.AbsScpiClient_MeasureAllCellCurrents(
+                self.__handle, byref(currents), c_uint(CELL_COUNT))
+        self.__check_err(res)
+        return currents[:]
+
+    def measure_average_cell_voltage(self, cell: int) -> float:
+        """Retrieve the rolling average of the last 10 voltage measurements for
+        a single cell.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
+        Args:
+            cell: Target cell index, 0-7.
+
+        Returns:
+            Average measured cell voltage.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
+        """
+        self.__ensure_ver(1,1,0)
+        voltage = c_float()
+        res = self.__dll.AbsScpiClient_MeasureAverageCellVoltage(
+                self.__handle, c_uint(cell), byref(voltage))
+        self.__check_err(res)
+        return voltage.value
+
+    def measure_all_average_cell_voltages(self) -> list[float]:
+        """Retrieve the rolling average of the last 10 voltage measurements for
+        all cells.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
+        Returns:
+            Array of average voltages, one per cell.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
+        """
+        self.__ensure_ver(1,1,0)
+        voltages = (c_float * CELL_COUNT)()
+        res = self.__dll.AbsScpiClient_MeasureAllAverageCellVoltages(
+                self.__handle, byref(voltages), c_uint(CELL_COUNT))
+        self.__check_err(res)
+        return voltages[:]
+
+    def measure_average_cell_current(self, cell: int) -> float:
+        """Retrieve the rolling average of the last 10 current measurements for
+        a single cell.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
+        Args:
+            cell: Target cell index, 0-7.
+
+        Returns:
+            Average measured cell current.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
+        """
+        self.__ensure_ver(1,1,0)
+        current = c_float()
+        res = self.__dll.AbsScpiClient_MeasureAverageCellCurrent(
+                self.__handle, c_uint(cell), byref(current))
+        self.__check_err(res)
+        return current.value
+
+    def measure_all_average_cell_currents(self) -> list[float]:
+        """Retrieve the rolling average of the last 10 current measurements for
+        all cells.
+
+        At the default sample rate, this is a 10ms window. With filtering on,
+        the length of this window will change.
+
+        .. note::
+
+            This function requires ABS firmware version 1.2.0 or newer.
+
+        Returns:
+            Array of average currents, one per cell.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.1.0
+        """
+        self.__ensure_ver(1,1,0)
+        currents = (c_float * CELL_COUNT)()
+        res = self.__dll.AbsScpiClient_MeasureAllAverageCellCurrents(
                 self.__handle, byref(currents), c_uint(CELL_COUNT))
         self.__check_err(res)
         return currents[:]
