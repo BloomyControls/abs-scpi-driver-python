@@ -5,6 +5,7 @@
 
 from ctypes import *
 from ctypes.util import find_library
+from datetime import timedelta
 from enum import IntEnum, IntFlag
 import os
 import platform
@@ -1428,6 +1429,28 @@ class ScpiClient:
         res = self.__dll.AbsScpiClient_GetModelStatus(self.__handle, byref(val))
         self.__check_err(res)
         return AbsModelStatus(val.value)
+
+    def get_elapsed_model_time(self) -> timedelta:
+        """Query elapsed model time in milliseconds.
+
+        .. note::
+
+            This function requires ABS firmware version 1.3.0 or newer.
+
+        Returns:
+            Elapsed model time.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.2.0
+        """
+        self.__ensure_ver(1,2,0)
+        ms = c_int64()
+        res = self.__dll.AbsScpiClient_GetElapsedModelTime(
+                self.__handle, byref(ms))
+        self.__check_err(res)
+        return timedelta(milliseconds=ms.value)
 
     def load_model(self):
         """Load the model configuration on the device.
