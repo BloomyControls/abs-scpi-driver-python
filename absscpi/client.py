@@ -117,7 +117,7 @@ class AbsSerialDiscoveryResult(Structure):
 
     def get_id(self) -> int:
         """Get the device's serial ID."""
-        return self.id.value
+        return self.id
 
     def get_serial(self) -> str:
         """Get the device's serial number."""
