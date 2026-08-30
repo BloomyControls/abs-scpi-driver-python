@@ -306,21 +306,39 @@ class ScpiClient:
                 self.__handle, target_ip.encode())
         self.__check_err(res)
 
-    def open_serial(self, port: str, device_id: int):
+    def open_serial(self, port: str, device_id: int, baud: int = 115200):
         """Open a serial connection to the device.
+
+        .. note::
+
+            Using a baud other than the default 115200 requires the ABS to be
+            configured for that baud. This requires ABS firmware v1.5.0 or
+            higher.
 
         Args:
             port: Serial port, such as "COM1" or "/dev/ttyS1."
             device_id: Device's serial ID, 0-31, or 32+ to address all units
                 on the bus.
+            baud: Serial baud rate (see note).
 
         Raises:
             ScpiClientError: An error occurred while opening the port.
+
+        .. versionadded:: 1.3.0
+           The *baud* parameter.
         """
         if device_id < 0:
             raise ValueError(f"device ID out of range: {device_id}")
-        res = self.__dll.AbsScpiClient_OpenSerial(
-                self.__handle, port.encode(), c_uint(device_id))
+
+        if baud != 115200:
+            self.__ensure_ver(1,4,0)
+            res = self.__dll.AbsScpiClient_OpenSerialWithBaud(
+                    self.__handle, port.encode(), c_uint(device_id),
+                    c_uint(baud))
+        else:
+            res = self.__dll.AbsScpiClient_OpenSerial(
+                    self.__handle, port.encode(), c_uint(device_id))
+
         self.__check_err(res)
 
     def close(self):
@@ -448,6 +466,72 @@ class ScpiClient:
                 self.__handle, byref(conf))
         self.__check_err(res)
         return conf
+
+    def get_serial_baud(self) -> int:
+        """Retried the device's configured serial baud rate.
+
+        .. note::
+
+            This function requires ABS firmware version 1.5.0 or newer.
+
+        Returns:
+            Configured baud rate.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.3.0
+        """
+        self.__ensure_ver(1,4,0)
+        baud = c_uint()
+        res = self.__dll.AbsScpiClient_GetSerialBaud(
+                self.__handle, byref(baud))
+        self.__check_err(res)
+        return baud.value
+
+    def set_serial_baud(self, baud: int):
+        """Retried the device's configured serial baud rate.
+
+        The ABS supports a limited set of baud rates:
+
+        * 115200
+        * 230400
+        * 460800
+        * 500000
+        * 576000
+        * 921600
+        * 1000000
+        * 1152000
+        * 1500000
+        * 2000000
+        * 2500000
+        * 3000000
+        * 3500000
+        * 4000000
+
+        Keep in mind that while the ABS supports all the bauds listed above,
+        higher bauds may require shorter wire lengths, shielding, and proper
+        termination.
+
+        .. note::
+
+            This function requires ABS firmware version 1.5.0 or newer.
+
+        Args:
+            baud: Desired baud rate.
+
+        Returns:
+            Configured baud rate.
+
+        Raises:
+            ScpiClientError: An error occurred while executing the query.
+
+        .. versionadded:: 1.3.0
+        """
+        self.__ensure_ver(1,4,0)
+        res = self.__dll.AbsScpiClient_SetSerialBaud(
+                self.__handle, c_uint(baud))
+        self.__check_err(res)
 
     def get_calibration_date(self) -> str:
         """Query the device's calibration date.
